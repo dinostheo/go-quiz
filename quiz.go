@@ -7,10 +7,18 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 )
+
+func exit(count int, total int) {
+	fmt.Printf("\nYou answered %d/%d correctly", count, total)
+
+	os.Exit(0)
+}
 
 func main() {
 	csvFile := flag.String("csv", "problems.csv", "The path to the questions & answers csv file")
+	limit := flag.Int("limit", 30, "The time to run the quiz in seconds (default is 30 seconds)")
 	flag.Parse()
 
 	data, err := ioutil.ReadFile(*csvFile)
@@ -19,8 +27,6 @@ func main() {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-
-	fmt.Println("Go quiz yourself! ", *csvFile)
 
 	dataStr := strings.Split(string(data), "\n")
 
@@ -33,6 +39,13 @@ func main() {
 		}
 	}
 
+	go func() {
+		time.Sleep(time.Duration(*limit) * time.Second)
+		fmt.Println("\nTime's up!!!")
+
+		exit(correctCounter, len(expr))
+	}()
+
 	for _, v := range expr {
 		parts := strings.Split(v, ",")
 
@@ -40,10 +53,10 @@ func main() {
 		reader := bufio.NewReader(os.Stdin)
 		text, _ := reader.ReadString('\n')
 
-		if strings.TrimSpace(text) == parts[1] {
+		if strings.ToLower(strings.TrimSpace(text)) == strings.ToLower(parts[1]) {
 			correctCounter++
 		}
 	}
 
-	fmt.Printf("You answered %d/%d correctly", correctCounter, len(expr))
+	exit(correctCounter, len(expr))
 }
