@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -16,9 +17,24 @@ func exit(count int, total int) {
 	os.Exit(0)
 }
 
+func shuffleQuestions(qas []string) []string {
+	l := len(qas)
+
+	for i := range qas {
+		j := rand.Intn(l)
+		qas[i], qas[j] = qas[j], qas[i]
+	}
+
+	return qas
+}
+
 func main() {
+	rand.Seed(time.Now().UTC().UnixNano())
+
 	csvFile := flag.String("csv", "problems.csv", "The path to the questions & answers csv file")
 	limit := flag.Int("limit", 30, "The time to run the quiz in seconds (default is 30 seconds)")
+	shuffle := flag.Bool("shuffle", false, "Shuffle the questions")
+
 	flag.Parse()
 
 	data, err := ioutil.ReadFile(*csvFile)
@@ -37,6 +53,10 @@ func main() {
 		if strings.TrimSpace(v) != "" {
 			expr = append(expr, v)
 		}
+	}
+	fmt.Println(">>>>>> ", *shuffle)
+	if *shuffle {
+		expr = shuffleQuestions(expr)
 	}
 
 	go func() {
