@@ -54,7 +54,7 @@ func main() {
 			expr = append(expr, v)
 		}
 	}
-	fmt.Println(">>>>>> ", *shuffle)
+
 	if *shuffle {
 		expr = shuffleQuestions(expr)
 	}
